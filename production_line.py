@@ -1,63 +1,57 @@
-import threading
-import queue
 import time
-import random
 
-class LineProduction:
-    def __init__(self, buffer_capacity, num_producers, num_consumers, timesteps):
-        self.buffer = queue.Queue(maxsize=buffer_capacity)
-        self.buffer_capacity = buffer_capacity
-        self.num_producers = num_producers
-        self.num_consumers = num_consumers
-        self.timesteps = timesteps
-        self.total_produced = 0
-        self.total_consumed = 0
-        self.lock = threading.Lock()
-        self.sem_items = threading.Semaphore(0)
-        self.sem_space = threading.Semaphore(buffer_capacity)
-        self.production_log = []  # Para análise
-        self.consumption_log = []  # Para análise
+# Classes fictícias para o exemplo (defina essas no código real)
+class Buffer:
+    def __init__(self, capacity):
+        self.capacity = capacity
+        self.items = []
 
-    def producer(self, producer_id):
-        for t in range(self.timesteps):
-            self.sem_space.acquire()
-            time.sleep(random.uniform(0.01, 0.1))  # Simula produção
-            with self.lock:
-                self.buffer.put(1)
-                self.total_produced += 1
-                self.production_log.append((t, producer_id, self.buffer.qsize()))
-            self.sem_items.release()
+class Producer:
+    def __init__(self, buffer, id):
+        self.buffer = buffer
+        self.id = id
 
-    def consumer(self, consumer_id):
-        for t in range(self.timesteps):
-            self.sem_items.acquire()
-            time.sleep(random.uniform(0.01, 0.1))  # Simula consumo
-            with self.lock:
-                self.buffer.get()
-                self.total_consumed += 1
-                self.consumption_log.append((t, consumer_id, self.buffer.qsize()))
-            self.sem_space.release()
+    def produce(self):
+        print(f"Produtor {self.id} produziu um item.")
 
-    def run(self):
-        threads = []
+class Consumer:
+    def __init__(self, buffer, id):
+        self.buffer = buffer
+        self.id = id
 
-        for i in range(self.num_producers):
-            t = threading.Thread(target=self.producer, args=(i,))
-            threads.append(t)
-            t.start()
+    def consume(self):
+        print(f"Consumidor {self.id} consumiu um item.")
 
-        for i in range(self.num_consumers):
-            t = threading.Thread(target=self.consumer, args=(i,))
-            threads.append(t)
-            t.start()
+# Função principal de simulação
+def simulate_production_line(buffer_capacity, num_producers, num_consumers, num_timesteps):
+    buffer = Buffer(buffer_capacity)
+    producers = [Producer(buffer, i) for i in range(num_producers)]
+    consumers = [Consumer(buffer, i) for i in range(num_consumers)]
 
-        for t in threads:
-            t.join()
+    for t in range(num_timesteps):
+        print(f"Timestep {t + 1}/{num_timesteps}")
+        for producer in producers:
+            producer.produce()
+        for consumer in consumers:
+            consumer.consume()
+        time.sleep(0.1)
 
-        return {
-            "total_produced": self.total_produced,
-            "total_consumed": self.total_consumed,
-            "final_buffer": self.buffer.qsize(),
-            "production_log": self.production_log,
-            "consumption_log": self.consumption_log,
-        }
+    print("Simulação concluída!")
+
+    
+
+# Parâmetros de configuração
+BUFFER_CAPACITY = int(input("Digite a capacidade do buffer: "))
+NUM_PRODUCERS = int(input("Digite o número de produtores: "))
+NUM_CONSUMERS = int(input("Digite o número de consumidores: "))
+NUM_TIMESTEPS = int(input("Digite o número de timesteps: "))
+
+
+# Inicialização
+if __name__ == "__main__":
+    simulate_production_line(
+        buffer_capacity=BUFFER_CAPACITY,
+        num_producers=NUM_PRODUCERS,
+        num_consumers=NUM_CONSUMERS,
+        num_timesteps=NUM_TIMESTEPS
+    )
