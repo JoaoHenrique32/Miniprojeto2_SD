@@ -131,10 +131,10 @@ def simulate_production_line(buffer_capacity, num_producers, num_consumers, num_
     plt.show()
 
 # Parâmetros de configuração
-BUFFER_CAPACITY = 10
-NUM_PRODUCERS = 2
-NUM_CONSUMERS = 3
-NUM_TIMESTEPS = 100
+BUFFER_CAPACITY = int(input("Digite a capacidade do buffer: "))
+NUM_PRODUCERS = int(input("Digite o número de produtores: "))
+NUM_CONSUMERS = int(input("Digite o número de consumidores: "))
+NUM_TIMESTEPS = int(input("Digite o número de timesteps: "))
 
 # Inicialização
 if __name__ == "__main__":
