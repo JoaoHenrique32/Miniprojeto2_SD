@@ -30,15 +30,14 @@ class Buffer:
         return len(self.items)
 
 class Producer(threading.Thread):
-    def __init__(self, buffer, id, stop_event):
+    def __init__(self, buffer, id):
         super().__init__()
         self.buffer = buffer
         self.id = id
         self.produced_count = 0  # Contador de itens produzidos
-        self.stop_event = stop_event  # Evento para parar a thread
     
     def run(self):
-        while not self.stop_event.is_set():  # Verifica se o stop_event foi acionado
+        while True:
             time.sleep(random.uniform(0.1, 0.5))  # Simula o tempo de produção
             self.buffer.add_item()  # Produz um item e adiciona ao buffer
             self.produced_count += 1
@@ -46,15 +45,14 @@ class Producer(threading.Thread):
             self.buffer.item_semaphore.release()  # Libera um item para consumo
 
 class Consumer(threading.Thread):
-    def __init__(self, buffer, id, stop_event):
+    def __init__(self, buffer, id):
         super().__init__()
         self.buffer = buffer
         self.id = id
         self.consumed_count = 0  # Contador de itens consumidos
-        self.stop_event = stop_event  # Evento para parar a thread
     
     def run(self):
-        while not self.stop_event.is_set():  # Verifica se o stop_event foi acionado
+        while True:
             time.sleep(random.uniform(0.1, 0.5))  # Simula o tempo de consumo
             self.buffer.remove_item()  # Consome um item do buffer
             self.consumed_count += 1
@@ -64,9 +62,8 @@ class Consumer(threading.Thread):
 # Função de simulação com contagem e relatório
 def simulate_production_line(buffer_capacity, num_producers, num_consumers, num_timesteps):
     buffer = Buffer(buffer_capacity)
-    stop_event = threading.Event()  # Evento para controlar a parada das threads
-    producers = [Producer(buffer, i, stop_event) for i in range(num_producers)]
-    consumers = [Consumer(buffer, i, stop_event) for i in range(num_consumers)]
+    producers = [Producer(buffer, i) for i in range(num_producers)]
+    consumers = [Consumer(buffer, i) for i in range(num_consumers)]
     
     # Inicia as threads de produtores e consumidores
     for producer in producers:
@@ -103,16 +100,6 @@ def simulate_production_line(buffer_capacity, num_producers, num_consumers, num_
         
         # Espera um pouco antes de continuar para o próximo timestep
         time.sleep(0.5)
-    
-    # Parar as threads
-    stop_event.set()
-
-    # Aguardar as threads terminarem
-    for producer in producers:
-        producer.join()
-    
-    for consumer in consumers:
-        consumer.join()
     
     # Relatório final
     print("\nRelatório Final:")
